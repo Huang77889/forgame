@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第 4 週課程 - 羅賓貓</title>
+    <style>
+        body { font-family: Arial, sans-serif; 
+            max-width: 600px; margin: 30px auto; 
+            padding: 20px; line-height: 1.6; }
+        h1 { color: #2c3e50; text-align: center; }
+        .section { background: #f8f9fa; 
+            border-left: 5px solid #3498db; 
+            padding: 15px; 
+            margin: 20px 0; 
+            border-radius: 4px; }
+        .btn { display: inline-block; 
+            padding: 8px 15px; 
+            background: #e67e22; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 4px; 
+            font-weight: bold; 
+            margin-right: 10px; }
+        .btn.backup { background: #95a5a6; }
+        .game-zone { background: #d7d7d6; border-left: 5px solid #d35400; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .disabled-link { pointer-events: none; 
+            background-color: #bdc3c7 !important; 
+            color: #7f8c8d; 
+            cursor: not-allowed; }
+        .home-btn { display: block; 
+            text-align: center; 
+            margin-top: 40px; 
+            padding: 10px; 
+            background: #2ecc71; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 5px; 
+            font-weight: bold; }
+        /*home鍵停留效果*/
+        .home-btn:hover { background: #27ae60; }
+
+        #timer { font-weight: bold; color: #c0392b; }
+
+        /* 進入遊戲列按鈕樣式 */
+        .enter-game-btn {
+            padding: 8px 15px;
+            font-size: 12pt;
+            font-weight: bold;
+            color: white;
+            background-color: #95a5a6;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            transition: background 0.2s, transform 0.1s;
+        }
+        .enter-game-btn:active { transform: scale(0.98); }
+    </style>
+</head>
+<body>
+
+    <h1>第 04 週：羅賓貓</h1>
+
+    <!-- 1. 作業下載區 -->
+    <div class="section">
+        <h3>📂 本週作業檔案下載</h3>
+        <p>請同學先點擊主要作業檔，並依照老師的說明練習喔！</p>
+        <!-- 請將下面的 # 替換成您實際的雲端硬碟或其他下載連結 -->
+        <a href="https://turbowarp.org/1383275882/editor" class="btn" target="_blank">一二年級作業區</a>
+        <a href="https://turbowarp.org/1277011570/editor" class="btn" target="_blank">三～六年級作業區</a>
+        <a href="https://docs.google.com/presentation/d/1R-jWKwMmYDInOcxceWqKwZy2f_MXKjWJ/edit?usp=sharing&ouid=117177431560264184201&rtpof=true&sd=true" class="btn backup" target="_blank">三～六年級講議</a>
+    </div>
+
+    <!-- 2. 課後遊戲區（限制20分鐘後開啟） -->
+    <div class="game-zone">
+        <h3>🎮 課後挑戰遊戲區</h3>
+        <p id="lock-msg">🔒 上課認真聽！遊戲區將在 <span id="timer">40:00</span> 後解鎖。</p>
+        <!-- 初始狀態設定為 disabled-link 限制點擊 -->
+        <a href="https://scratch.mit.edu/projects/1277010759/fullscreen/" id="game-link" class="btn disabled-link" target="_blank">進入完整版遊戲</a>
+        <!--<a href="game-list.html" class="btn disabled-link" target="_blank">遊戲區列表</a>
+    -->
+        <button class="enter-game-btn" onclick="checkPassword()">遊戲區列表</button>
+
+    </div>
+
+    <!-- 3. 回首頁按鈕 -->
+    <a href="scratch_index.html" class="home-btn">🏠 返回首頁</a>
+
+    <!-- 倒數 20 分鐘的 JavaScript 程式碼 -->
+    <script>
+        let gamelist="scratch_index.html"
+        // 變數設定｜設定倒數秒數：20分鐘 = 1200 秒 (測試時可以改成 5 秒方便測試)
+        let timeLeft = 2400; 
+        // 常數設定
+        const timerElement = document.getElementById('timer');
+        const lockMsgElement = document.getElementById('lock-msg');
+        const gameLink = document.getElementById('game-link');
+
+        const countdown = setInterval(function() {//設定函式
+            timeLeft--;
+
+            // 計算分與秒
+            let minutes = Math.floor(timeLeft / 60);
+            let seconds = timeLeft % 60;
+
+            // 補零顯示 (例如 05:09)
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            seconds = seconds < 10 ? '0' + seconds : seconds;
+
+            timerElement.textContent = minutes + ':' + seconds;
+
+            // 時間到，解除限制
+            if (timeLeft <= 0) {
+                clearInterval(countdown);//呼叫函式？
+                lockMsgElement.innerHTML = "🔓 時間到！遊戲區已解鎖，請點擊下方按鈕開始。";
+                lockMsgElement.style.color = "#27ae60";//按鍵顏色轉換
+                gameLink.classList.remove('disabled-link'); // 移除禁止點擊的樣式
+                gameLink.style.background = "#e74c3c"; // 變成亮眼的紅色按鈕
+                }
+         }, 1000);
+        //遊戲列表輸入密碼開啟
+        function checkPassword() {
+            const correctPassword = "0000"; // 🔑 老師請在這裡修改您想要的密碼
+            const hint = "認真上完課老師會給密碼！"; // 💡 密碼錯誤時的提示內容
+            
+            let userInput = prompt("請輸入遊戲區密碼：");
+
+            // 使用迴圈：若輸入錯誤會一直彈出，直到答對或點擊「取消/關閉」為止
+            while (userInput !== null) {
+                if (userInput === correctPassword) {
+                    alert("🎉 密碼正確！正在為您開啟遊戲區。");
+                    
+                    // 效果：平滑滾動到下方的遊戲區域（若要跳轉到全新網頁，請參考下方說明）
+                    
+                    window.location.href = "gamelist.html";
+                    return; // 結束 function
+                } else {
+                    // 密碼錯誤，給予提示，並讓學生重新輸入
+                    userInput = prompt("❌ 密碼錯誤！\n\n 還沒上完課就想玩遊戲？\n\n" + hint + "\n\n請重新輸入密碼（或點擊取消回到原頁面）：");
+                }
+            }
+            
+            // 如果學生點選「取消」或關閉視窗，userInput 會是 null，直接退回原網頁
+            alert("已關閉輸入視窗，請繼續完成作業。");
+        }
+    </script>
+
+</body>
+</html>

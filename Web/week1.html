@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第 1 週課程 - 雙城國小Scratch課後社團</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 30px auto; padding: 20px; line-height: 1.6; }
+        h1 { color: #2c3e50; text-align: center; }
+        .section { background: #f8f9fa; border-left: 5px solid #3498db; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .btn { display: inline-block; padding: 8px 15px; background: #e67e22; color: white; text-decoration: none; border-radius: 4px; font-weight: bold; margin-right: 10px; }
+        .btn.backup { background: #95a5a6; }
+        .game-zone { background: #f1c40f; border-left: 5px solid #d35400; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .disabled-link { pointer-events: none; background-color: #bdc3c7 !important; color: #7f8c8d; cursor: not-allowed; }
+        .home-btn { display: block; text-align: center; margin-top: 40px; padding: 10px; background: #2ecc71; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        .home-btn:hover { background: #27ae60; }
+        #timer { font-weight: bold; color: #c0392b; }
+    </style>
+</head>
+<body>
+
+    <h1>第 01 週：認識 Scratch 舞台</h1>
+
+    <!-- 1. 作業下載區 -->
+    <div class="section">
+        <h3>📂 本週作業檔案下載</h3>
+        <p>請小朋友先下載作業檔，並依照老師的說明開始練習喔！</p>
+        <!-- 請將下面的 # 替換成您實際的雲端硬碟或其他下載連結 -->
+        <a href="https://example.com" class="btn" target="_blank">點我下載【主要作業檔】</a>
+        <a href="https://example.com" class="btn backup" target="_blank">備用下載點</a>
+    </div>
+
+    <!-- 2. 課後遊戲區（限制20分鐘後開啟） -->
+    <div class="game-zone">
+        <h3>🎮 課後挑戰遊戲區</h3>
+        <p id="lock-msg">🔒 上課認真聽！遊戲區將在 <span id="timer">20:00</span> 後解鎖。</p>
+        <!-- 初始狀態設定為 disabled-link 限制點擊 -->
+        <a href="https://mit.edu" id="game-link" class="btn disabled-link" target="_blank">進入遊戲區</a>
+    </div>
+
+    <!-- 3. 回首頁按鈕 -->
+    <a href="index.html" class="home-btn">🏠 返回社團首頁</a>
+
+    <!-- 倒數 20 分鐘的 JavaScript 程式碼 -->
+    <script>
+        // 設定倒數秒數：20分鐘 = 1200 秒 (測試時可以改成 5 秒方便測試)
+        let timeLeft = 1200; 
+        const timerElement = document.getElementById('timer');
+        const lockMsgElement = document.getElementById('lock-msg');
+        const gameLink = document.getElementById('game-link');
+
+        const countdown = setInterval(function() {
+            timeLeft--;
+
+            // 計算分與秒
+            let minutes = Math.floor(timeLeft / 60);
+            let seconds = timeLeft % 60;
+
+            // 補零顯示 (例如 05:09)
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            seconds = seconds < 10 ? '0' + seconds : seconds;
+
+            timerElement.textContent = minutes + ':' + seconds;
+
+            // 時間到，解除限制
+            if (timeLeft <= 0) {
+                clearInterval(countdown);
+                lockMsgElement.innerHTML = "🔓 時間到！遊戲區已解鎖，請點擊下方按鈕開始。";
+                lockMsgElement.style.color = "#27ae60";
+                gameLink.classList.remove('disabled-link'); // 移除禁止點擊的樣式
+                gameLink.style.background = "#e74c3c"; // 變成亮眼的紅色按鈕
+            }
+        }, 1000);
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scratch 小小遊戲設計師公約</title>
+  <style>
+    :root {
+      --ink: #243047;
+      --muted: #526078;
+      --paper: #fffdf7;
+      --blue: #dbeafe;
+      --red: #fee2e2;
+      --green: #d1fae5;
+      --yellow: #fef3c7;
+      --purple: #ede9fe;
+      --gray: #f3f4f6;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 28px 16px;
+      background: linear-gradient(135deg, #eef6ff, #fff8e8);
+      color: var(--ink);
+      font-family: "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+    }
+    .poster {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: clamp(20px, 4vw, 40px);
+      background: var(--paper);
+      border: 3px solid #243047;
+      border-radius: 28px;
+      box-shadow: 0 12px 0 rgba(36, 48, 71, .12);
+    }
+    header { text-align: center; margin-bottom: 26px; }
+    .kicker {
+      display: inline-block;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: #243047;
+      color: white;
+      font-size: .9rem;
+      font-weight: 800;
+      letter-spacing: .08em;
+    }
+    h1 {
+      margin: 14px 0 8px;
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      line-height: 1.2;
+    }
+    .subtitle { margin: 0; color: var(--muted); font-size: 1.05rem; }
+    .rules {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .rule {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 18px;
+      border: 2px solid rgba(36, 48, 71, .12);
+      border-radius: 20px;
+      min-height: 142px;
+    }
+    .rule:nth-child(1) .emoji { background: var(--blue); }
+    .rule:nth-child(2) .emoji { background: var(--red); }
+    .rule:nth-child(3) .emoji { background: var(--green); }
+    .rule:nth-child(4) .emoji { background: var(--yellow); }
+    .rule:nth-child(5) .emoji { background: var(--purple); }
+    .rule:nth-child(6) .emoji { background: var(--gray); }
+    .emoji {
+      flex: 0 0 54px;
+      width: 54px;
+      height: 54px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      font-size: 1.8rem;
+    }
+    h2 { margin: 2px 0 7px; font-size: 1.15rem; line-height: 1.4; }
+    .rule p { margin: 0; color: var(--muted); line-height: 1.65; }
+    .chant {
+      margin-top: 22px;
+      padding: 18px;
+      text-align: center;
+      background: #fff0c2;
+      border: 2px dashed #e3a927;
+      border-radius: 18px;
+      font-size: clamp(1rem, 2.8vw, 1.25rem);
+      font-weight: 800;
+      line-height: 1.6;
+    }
+    footer { margin-top: 18px; text-align: center; color: var(--muted); font-size: .9rem; }
+    @media (max-width: 620px) {
+      body { padding: 14px 10px; }
+      .rules { grid-template-columns: 1fr; }
+      .rule { min-height: 0; }
+      .poster { border-radius: 20px; }
+    }
+    @media print {
+      body { background: white; padding: 0; }
+      .poster { max-width: none; border: 2px solid #243047; box-shadow: none; }
+      .rule { break-inside: avoid; }
+      @page { size: A4 portrait; margin: 10mm; }
+    }
+        h1 { color: #2c3e50; }
+        .menu-list { list-style: none; padding: 0; }
+        .menu-list li { margin: 15px 0; }
+        .menu-list a { display: inline-block; 
+          width: 80%; 
+          padding: 10px; background-color: #b1b1b1;
+          color: white; text-decoration: none; 
+          border-radius: 5px; font-weight: bold; }
+        .menu-list a:hover { background-color: #e3a927; }
+        
+        .other-list { list-style: none; padding: 0; }
+        .other-list li { margin: 10px 0; }
+        .other-list a { display: inline-block; width: 20%; padding: 5px; background-color: #0b0b0b; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        .other-list a:hover { background-color: #0a0a0a; }    
+  </style>
+</head>
+<body>
+  <main class="poster">
+    <header>
+      <span class="kicker">OUR CLASS AGREEMENT</span>
+      <h1>🎮 Scratch 小小遊戲設計師公約</h1>
+      <p class="subtitle">一起發揮創意，安全又開心地設計遊戲！</p>
+    </header>
+
+    <section class="rules" aria-label="課堂公約">
+      <article class="rule">
+        <div class="emoji" aria-hidden="true">👀</div>
+        <div>
+          <h2>1. 眼睛看老師，耳朵聽說明</h2>
+          <p>老師示範時，專心觀察操作步驟。</p>
+        </div>
+      </article>
+
+      <article class="rule">
+        <div class="emoji" aria-hidden="true">🖐️</div>
+        <div>
+          <h2>2. 示範時間，手離滑鼠鍵盤</h2>
+          <p>老師還沒說開始前，先把手放下，不操作自己的電腦，避免畫面或程式被改動。</p>
+        </div>
+      </article>
+
+      <article class="rule">
+        <div class="emoji" aria-hidden="true">🖱️</div>
+        <div>
+          <h2>3. 聽到開始，才動手操作</h2>
+          <p>跟著老師的步驟，一步一步完成自己的遊戲。</p>
+        </div>
+      </article>
+
+      <article class="rule">
+        <div class="emoji" aria-hidden="true">🙋</div>
+        <div>
+          <h2>4. 遇到問題，先舉手詢問</h2>
+          <p>不亂按、不急著自己嘗試，避免不小心刪掉程式。</p>
+        </div>
+      </article>
+
+      <article class="rule">
+        <div class="emoji" aria-hidden="true">💡</div>
+        <div>
+          <h2>5. 勇敢嘗試，不怕出錯</h2>
+          <p>自己操作時可以探索、測試；程式出錯了，就一起找原因。</p>
+        </div>
+      </article>
+
+      <article class="rule">
+        <div class="emoji" aria-hidden="true">💾</div>
+        <div>
+          <h2>6. 愛惜設備，記得存檔</h2>
+          <p>正確使用電腦，完成後依照老師指示儲存作品、整理環境。</p>
+        </div>
+      </article>
+    </section>
+
+    <div class="chant">📣 小手休息，看老師！<br>設計師，開始！動手做！</div>
+    <footer>我們一起遵守約定，成為有創意、會合作的小小遊戲設計師！</footer>
+  </main>
+  <br>
+  <main class="poster">
+    <header>
+      <h1>雙城國小Scratch課後社團</h1>
+      <p class="subtitle">歡迎來到 Scratch 課後社團！請點選當週的課程開始上課：</p>
+
+      <ul class="menu-list">
+          <!--
+          <li><a href="week1.html">第 01 週課程：認識 Scratch</a></li>
+          <li><a href="week2.html">第 02 週課程：跳跳鳥</a></li>
+      -->
+          <li><a href="week3.html">~第 03 週課程：變形迷宮~</a></li>
+          <li><a href="week4.html">~第 04 週課程：羅賓貓～</a></li>
+
+      <!--</ul>
+      <ul class="other-list">
+          <li><a href="">遊戲區列表</a></li>
+          <a href="home.html">here</a>
+      </ul>-->
+    </header>
+  </main>
+  
+</body>
+</html>

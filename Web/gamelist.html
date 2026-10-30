@@ -1,0 +1,353 @@
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>遊戲 QR Code 集合</title>
+
+    <!-- 載入 QR Code 函式庫 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        /* 整體網頁 */
+        body {
+            font-family: Arial, "Noto Sans TC", sans-serif;
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 20px;
+            text-align: center;
+            background-color: #f5f6fa;
+            color: #333;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+        }
+
+        .description {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        /* 遊戲卡片排列 */
+        #qrList {
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fit,
+                minmax(220px, 1fr)
+            );
+            gap: 24px;
+        }
+
+        /* 單張卡片 */
+        .qr-card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+            overflow-wrap: anywhere;
+        }
+
+        .qr-card h2 {
+            font-size: 20px;
+            margin-top: 0;
+        }
+
+        /* 可點擊的圖片／QR Code 區域 */
+        .game-display {
+            width: 100%;
+            min-height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 15px 0;
+            cursor: pointer;
+            border-radius: 10px;
+            background-color: #fafafa;
+        }
+
+        /* 遊戲示意圖片 */
+        .game-image {
+            width: 100%;
+            max-width: 240px;
+            height: 200px;
+            object-fit: contain;
+            display: block;
+        }
+
+        /* QR Code */
+        .qrcode {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            min-height: 200px;
+        }
+
+        .qrcode img,
+        .qrcode canvas {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* 點擊提示 */
+        .click-hint {
+            font-size: 13px;
+            color: #888;
+            margin: 10px 0;
+        }
+
+        /* 進入遊戲按鈕 */
+        .game-link {
+            display: block;
+            box-sizing: border-box;
+            width: 100%;
+            padding: 12px 16px;
+            margin-top: 12px;
+
+            background-color: #4F46E5;
+            color: white;
+
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            text-decoration: none;
+
+            border-radius: 8px;
+            transition: background-color 0.2s;
+        }
+
+        /* 滑鼠移上去的效果 */
+        .game-link:hover {
+            background-color: #3730A3;
+        }
+
+        /* 手機版 */
+        @media (max-width: 500px) {
+            body {
+                margin: 20px auto;
+                padding: 12px;
+            }
+
+            #qrList {
+                grid-template-columns: 1fr;
+            }
+        }
+        .home-btn { display: block; 
+            text-align: center; 
+            margin-top: 40px; 
+            padding: 10px; 
+            background: #a79cd9; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 5px; 
+            font-weight: bold; }
+        /*home鍵停留效果*/
+        .home-btn:hover { background: #7c73cd; }
+        
+    </style>
+</head>
+
+<body>
+
+    <h1>🎮 課後遊戲區</h1>
+
+    <!--<p class="description">
+        點擊遊戲圖片查看 QR Code，再次點擊即可返回圖片。
+    </p>-->
+
+    <!-- JavaScript 會自動將遊戲卡片加入這裡 -->
+    <div id="qrList"></div>
+        <!-- 3. 回首頁按鈕 -->
+    <a href="scratch_index.html" class="home-btn">🏠 返回首頁</a>
+
+    <script>
+        // =====================================
+        // 1. 設定遊戲資料
+        // =====================================
+
+        const websites = [
+            {
+                Gtag: 01,
+                name: "挖金礦",
+                url: "https://scratch.mit.edu/projects/1171341542/fullscreen/",
+                pic: "img/imgGame1.png"
+            },
+            {
+                Gtag: 02,
+                name: "跳跳方塊",
+                url: "https://scratch.mit.edu/projects/706829229/fullscreen/" ,
+                pic: "img/imgGame2.png" 
+            },
+            {
+                Gtag: 03,
+                name: "跳跳方塊2",
+                url: "https://scratch.mit.edu/projects/1352040748/fullscreen/ " ,
+                pic: "img/imgGame3.png" 
+            },
+            {
+                Gtag: 04,
+                name: "Uno Flip!",
+                url: "https://scratch.mit.edu/projects/475832391/fullscreen/" ,
+                pic: "img/imgGame4.png" 
+            },
+            {
+                Gtag: 05,
+                name: "minecraft 跑酷",
+                url: "https://scratch.mit.edu/projects/725052319/" ,
+                pic: "img/imgGame5.png" },
+            {
+                Gtag: 06,
+                name: "羊咩雞蛋工廠 1.0.1",
+                url: "https://scratch.mit.edu/projects/1246168318/fullscreen/" ,
+                pic: "img/imgGame6.png" 
+            },
+            {
+                Gtag: 07,
+                name: "火柴人塔防爭霸",
+                url: "https://scratch.mit.edu/projects/697832811/" ,
+                pic: "img/imgGame7.png" 
+            },
+            {
+                Gtag: 08,
+                name: "Unblock Me v1.2",
+                url: "https://scratch.mit.edu/projects/200179954/fullscreen/" ,
+                pic: "img/imgGame8.png" 
+            }
+
+        ];
+
+
+        // =====================================
+        // 2. 取得網頁容器
+        // =====================================
+
+        const qrList = document.getElementById("qrList");
+
+
+        // =====================================
+        // 3. 逐一建立遊戲卡片
+        // =====================================
+
+        websites.forEach(function(site) {
+
+            // 建立卡片
+            const card = document.createElement("div");
+            card.className = "qr-card";
+
+
+            // 建立遊戲名稱
+            const title = document.createElement("h2");
+            title.textContent = site.name;
+
+
+            // 建立圖片與 QR Code 共用的顯示區域
+            const display = document.createElement("div");
+            display.className = "game-display";
+
+
+            // 建立遊戲圖片
+            const Img = document.createElement("img");
+            Img.src = site.pic;
+            Img.alt = site.name;
+            Img.className = "game-image";
+
+
+            // 如果圖片路徑錯誤，顯示提示
+            Img.onerror = function() {
+                Img.alt = "圖片載入失敗：" + site.pic;
+                Img.style.display = "none";
+
+                const errorMessage = document.createElement("p");
+                errorMessage.textContent = "圖片載入失敗，請檢查路徑";
+                errorMessage.style.color = "#c0392b";
+
+                display.prepend(errorMessage);
+            };
+
+
+            // 建立 QR Code 容器
+            const qrContainer = document.createElement("div");
+            qrContainer.className = "qrcode";
+
+
+            // 產生 QR Code
+            new QRCode(qrContainer, {
+                text: site.url,
+                width: 180,
+                height: 180,
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+
+            // 初始狀態：顯示圖片、隱藏 QR Code
+            qrContainer.style.display = "none";
+
+
+            // 建立點擊提示文字
+            const hint = document.createElement("p");
+            hint.className = "click-hint";
+            hint.textContent = "點擊圖片查看 QR Code";
+
+
+            // =====================================
+            // 4. 點擊切換圖片與 QR Code
+            // =====================================
+
+            display.addEventListener("click", function() {
+
+                // 如果目前顯示圖片
+                if (Img.style.display !== "none" &&
+                    qrContainer.style.display === "none") {
+
+                    Img.style.display = "none";
+                    qrContainer.style.display = "flex";
+                    hint.textContent = "點擊 QR Code 返回圖片";
+
+                } else {
+
+                    // 切換回圖片
+                    Img.style.display = "block";
+                    qrContainer.style.display = "none";
+                    hint.textContent = "點擊圖片查看 QR Code";
+
+                }
+
+            });
+
+
+            // =====================================
+            // 5. 組合 HTML 元素
+            // =====================================
+
+            display.appendChild(Img);
+            display.appendChild(qrContainer);
+
+            card.appendChild(title);
+            card.appendChild(display);
+            card.appendChild(hint);
+
+
+
+            // 建立「進入遊戲」按鈕
+            const link = document.createElement("a");
+            link.className = "game-link";
+            link.href = site.url;
+            link.textContent = "進入遊戲";
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+
+            card.appendChild(link);
+
+
+            // 將卡片加入網頁
+            qrList.appendChild(card);
+
+        });
+
+    </script>
+
+</body>
+</html>
