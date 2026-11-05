@@ -1,7 +1,7 @@
 //倒數 20 分鐘的 JavaScript 程式碼 
 let gamelist="scratch_index.html"
 // 變數設定｜設定倒數秒數：20分鐘 = 1200 秒 (測試時可以改成 5 秒方便測試)
-let timeLeft = 1; 
+let timeLeft = 1200; 
 // 常數設定
 const timerElement = document.getElementById('timer');
 const lockMsgElement = document.getElementById('lock-msg');
