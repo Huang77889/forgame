@@ -119,6 +119,20 @@
         .other-list li { margin: 10px 0; }
         .other-list a { display: inline-block; width: 20%; padding: 5px; background-color: #0b0b0b; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; }
         .other-list a:hover { background-color: #0a0a0a; }    
+        /* 進入遊戲列按鈕樣式 */
+        .enter-game-btn {
+            padding: 8px 15px;
+            font-size: 12pt;
+            font-weight: bold;
+            color: white;
+            background-color: #95a5a6;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            transition: background 0.2s, transform 0.1s;
+        }
+        .enter-game-btn:active { transform: scale(0.98); }
   </style>
 </head>
 <body>
@@ -195,6 +209,9 @@
       -->
           <li><a href="week3.html">~第 03 週課程：變形迷宮~</a></li>
           <li><a href="week4.html">~第 04 週課程：羅賓貓～</a></li>
+          <li><a href="week5.html">~第 05 週課程：烤糰子～</a></li>
+          <button class="enter-game-btn" onclick="checkPassword()">遊戲區列表</button>
+          <!--<li><a href="week6.html">~第 06 週課程：瑪利歐～</a></li>-->
 
       <!--</ul>
       <ul class="other-list">
@@ -203,6 +220,6 @@
       </ul>-->
     </header>
   </main>
-  
+  <script src="week.js"></script>
 </body>
 </html>
