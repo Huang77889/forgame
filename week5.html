@@ -12,9 +12,50 @@
 </head>
 
 <script type="module">
+  // 引入 Supabase
   import { supabase } from 'js/supabase.js';
 
-  console.log('Supabase connection ready:', supabase);
+  // 取得上傳狀態顯示區
+  const statusElement = document.getElementById('upload-status');
+
+  // 建立或取得學生匿名身分
+  async function initializeStudent() {
+    try {
+      // 先檢查目前瀏覽器是否已有登入身分
+      const { data: { session }, error: sessionError } =
+        await supabase.auth.getSession();
+
+      if (sessionError) {
+        throw sessionError;
+      }
+
+      // 已有登入身分就不重複建立
+      if (session) {
+        console.log('學生已登入：', session.user.id);
+        statusElement.textContent = '已取得學生身分，可以準備繳交作業。';
+        return;
+      }
+
+      // 尚未登入，建立匿名身分
+      const { data, error } =
+        await supabase.auth.signInAnonymously();
+
+      if (error) {
+        throw error;
+      }
+
+      console.log('匿名登入成功：', data.user.id);
+      statusElement.textContent = '學生身分建立成功，可以準備繳交作業。';
+
+    } catch (error) {
+      console.error('匿名登入失敗：', error);
+      statusElement.textContent =
+        '身分建立失敗，請稍後重新整理頁面。';
+    }
+  }
+
+  // 執行初始化
+  initializeStudent();
 </script>
 
 <body>
@@ -45,6 +86,56 @@
 
     <!-- 3. 回首頁按鈕 -->
     <a href="index.html" class="home-btn">🏠 返回首頁</a>
+
+    <!-- 作業繳交區 -->
+    <section id="assignment-section">
+        <h2>第五週作業繳交</h2>
+        <p>請填寫基本資料並上傳本週作業。</p>
+
+        <form id="assignment-form">
+
+            <div class="form-group">
+                <label for="student-name">學生姓名</label>
+                <input
+                    type="text"
+                    id="student-name"
+                    name="student-name"
+                    placeholder="請輸入姓名"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="student-number">學號</label>
+                <input
+                    type="text"
+                    id="student-number"
+                    name="student-number"
+                    placeholder="請輸入學號"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="assignment-file">作業檔案</label>
+                <input
+                    type="file"
+                    id="assignment-file"
+                    name="assignment-file"
+                    required
+                >
+            </div>
+
+            <button type="submit" id="submit-btn">
+            提交作業
+            </button>
+
+            <p id="upload-status"></p>
+
+        </form>
+    </section>
+    <!-- 作業繳交區結束 -->
+
 
     <script src="js/week.js"></script>
 
