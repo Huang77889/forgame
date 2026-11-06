@@ -1,3 +1,4 @@
+/*
 //倒數 20 分鐘的 JavaScript 程式碼 
 let gamelist="scratch_index.html"
 // 變數設定｜設定倒數秒數：20分鐘 = 1200 秒 (測試時可以改成 5 秒方便測試)
@@ -28,7 +29,7 @@ const countdown = setInterval(function() {//設定函式
         gameLink.classList.remove('disabled-link'); // 移除禁止點擊的樣式
         gameLink.style.background = "#e74c3c"; // 變成亮眼的紅色按鈕
         }
-    }, 1000);
+    }, 1000);*/
 //遊戲列表輸入密碼開啟
 function checkPassword() {
     const correctPassword = "1106"; // 🔑 老師請在這裡修改您想要的密碼
