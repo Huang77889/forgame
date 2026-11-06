@@ -31,7 +31,7 @@ const countdown = setInterval(function() {//設定函式
     }, 1000);
 //遊戲列表輸入密碼開啟
 function checkPassword() {
-    const correctPassword = "0000"; // 🔑 老師請在這裡修改您想要的密碼
+    const correctPassword = "1106"; // 🔑 老師請在這裡修改您想要的密碼
     const hint = "認真上完課老師會給密碼！"; // 💡 密碼錯誤時的提示內容
     
     let userInput = prompt("請輸入遊戲區密碼：");
