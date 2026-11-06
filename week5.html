@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scratch課程 - 烤糰子</title>
+    <meta name="description" content="介紹課程表等等等" />
+    <!-- 關鍵字標籤（Meta Keywords）：現今各大搜尋引擎（如Google）已不再重用此標籤，但部分系統可備用 -->
+    <meta name="keywords" content="Scratch, 烤糰子, 小遊戲" />
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<script type="module">
+  // 引入 Supabase
+  import { supabase } from 'js/supabase.js';
+
+  // 取得上傳狀態顯示區
+  const statusElement = document.getElementById('upload-status');
+
+  // 建立或取得學生匿名身分
+  async function initializeStudent() {
+    try {
+      // 先檢查目前瀏覽器是否已有登入身分
+      const { data: { session }, error: sessionError } =
+        await supabase.auth.getSession();
+
+      if (sessionError) {
+        throw sessionError;
+      }
+
+      // 已有登入身分就不重複建立
+      if (session) {
+        console.log('學生已登入：', session.user.id);
+        statusElement.textContent = '已取得學生身分，可以準備繳交作業。';
+        return;
+      }
+
+      // 尚未登入，建立匿名身分
+      const { data, error } =
+        await supabase.auth.signInAnonymously();
+
+      if (error) {
+        throw error;
+      }
+
+      console.log('匿名登入成功：', data.user.id);
+      statusElement.textContent = '學生身分建立成功，可以準備繳交作業。';
+
+    } catch (error) {
+      console.error('匿名登入失敗：', error);
+      statusElement.textContent =
+        '身分建立失敗，請稍後重新整理頁面。';
+    }
+  }
+
+  // 執行初始化
+  initializeStudent();
+</script>
+
+<body>
+
+    <h1>第 05 週：烤糰子</h1>
+
+    <!-- 1. 作業下載區 -->
+    <div class="section">
+        <h3>📂 本週作業檔案下載</h3>
+        <p>請同學先點擊主要作業檔，並依照老師的說明練習喔！</p>
+        <!-- 請將下面的 # 替換成您實際的雲端硬碟或其他下載連結 
+        <a href="https://turbowarp.org/1382019507/editor" class="btn" target="_blank">一二年級作業區</a>-->
+        <a href="https://turbowarp.org/1363776188/editor" class="btn" target="_blank">作業區</a>
+        <a href="https://docs.google.com/presentation/d/1yGYtdKXHUCmhUXs1Pm0kLqAHs6PIW2Lz/edit?usp=sharing&ouid=117177431560264184201&rtpof=true&sd=true" class="btn backup" target="_blank" >講議</a>
+    </div>
+
+    <!-- 2. 課後遊戲區（限制20分鐘後開啟） -->
+    <div class="game-zone">
+        <h3>🎮 課後挑戰遊戲區</h3>
+        <!--<p id="lock-msg">🔒 上課認真聽！遊戲區將在 <span id="timer">40:00</span> 後解鎖。</p>-->
+        <!-- 初始狀態設定為 disabled-link 限制點擊 
+        <a href="https://scratch.mit.edu/projects/1363494332/fullscreen/" id="game-link" class="btn disabled-link" target="_blank">進入完整版遊戲</a>
+        <a href="game-list.html" class="btn disabled-link" target="_blank">遊戲區列表</a>
+    -->
+        <button class="enter-game-btn" onclick="checkPassword()">遊戲區列表</button>
+
+    </div>
+
+    <!-- 3. 回首頁按鈕 -->
+    <a href="index.html" class="home-btn">🏠 返回首頁</a>
+
+    <!-- 作業繳交區 -->
+    <section id="assignment-section">
+        <h2>第五週作業繳交</h2>
+        <p>請填寫基本資料並上傳本週作業。</p>
+
+        <form id="assignment-form">
+
+            <div class="form-group">
+                <label for="student-name">學生姓名</label>
+                <input
+                    type="text"
+                    id="student-name"
+                    name="student-name"
+                    placeholder="請輸入姓名"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="student-number">學號</label>
+                <input
+                    type="text"
+                    id="student-number"
+                    name="student-number"
+                    placeholder="請輸入學號"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="assignment-file">作業檔案</label>
+                <input
+                    type="file"
+                    id="assignment-file"
+                    name="assignment-file"
+                    required
+                >
+            </div>
+
+            <button type="submit" id="submit-btn">
+            提交作業
+            </button>
+
+            <p id="upload-status"></p>
+
+        </form>
+    </section>
+    <!-- 作業繳交區結束 -->
+
+
+    <script src="js/week.js"></script>
+
+
+</body>
+</html>

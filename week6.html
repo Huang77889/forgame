@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第 6 週課程 - 瑪利歐</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<script type="module">
+  import { supabase } from 'js/supabase.js';
+
+  console.log('Supabase connection ready:', supabase);
+</script>
+<body>
+
+    <h1>第 06 週課程：瑪利歐</h1>
+
+    <!-- 1. 作業下載區 -->
+    <div class="section">
+        <h3>📂 本週作業檔案下載</h3>
+        <p>請同學先點擊主要作業檔，並依照老師的說明練習喔！</p>
+        <!-- 請將下面的 # 替換成您實際的雲端硬碟或其他下載連結 -->
+        <a href="https://turbowarp.org/1277017786/editor" class="btn" target="_blank">作業區</a>
+        <!--<a href="https://turbowarp.org/1277011570/editor" class="btn" target="_blank">三～六年級作業區</a>-->
+        <a href="連結" class="btn backup" target="_blank">講議</a>
+    </div>
+
+    <!-- 2. 課後遊戲區（限制20分鐘後開啟） -->
+    <div class="game-zone">
+        <h3>🎮 課後挑戰遊戲區</h3>
+        <!--<p id="lock-msg">🔒 上課認真聽！遊戲區將在 <span id="timer">40:00</span> 後解鎖。</p>
+         初始狀態設定為 disabled-link 限制點擊 
+        <a href="https://scratch.mit.edu/projects/1277018321/fullscreen/" id="game-link" class="btn disabled-link" target="_blank">進入完整版遊戲</a>
+        <a href="game-list.html" class="btn disabled-link" target="_blank">遊戲區列表</a>
+    -->
+        <button class="enter-game-btn" onclick="checkPassword()">遊戲區列表</button>
+
+    </div>
+
+    <!-- 3. 回首頁按鈕 -->
+    <a href="index.html" class="home-btn">🏠 返回首頁</a>
+    <script src="js/week.js"></script>
+    
+</body>
+</html>
