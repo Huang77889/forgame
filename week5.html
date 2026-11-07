@@ -11,52 +11,170 @@
 
 </head>
 
+
 <script type="module">
-  // 引入 Supabase
   import { supabase } from './js/supabase.js';
 
-  // 取得上傳狀態顯示區
-  const statusElement = document.getElementById('upload-status');
+  // ===== 基本設定 =====
+  const WEEK_NUMBER = 5;
+  const BUCKET_NAME = 'assignment-files';
+  const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
 
-  // 建立或取得學生匿名身分
+  // ===== HTML 元素 =====
+  const statusElement = document.getElementById('upload-status');
+  const formElement = document.getElementById('assignment-form');
+  const nameElement = document.getElementById('student-name');
+  const numberElement = document.getElementById('student-number');
+  const fileElement = document.getElementById('assignment-file');
+  const submitButton = document.getElementById('submit-btn');
+
+  // ===== 取得學生登入身分 =====
   async function initializeStudent() {
     try {
-      // 先檢查目前瀏覽器是否已有登入身分
-      const { data: { session }, error: sessionError } =
-        await supabase.auth.getSession();
-
-      if (sessionError) {
-        throw sessionError;
-      }
-
-      // 已有登入身分就不重複建立
-      if (session) {
-        console.log('學生已登入：', session.user.id);
-        statusElement.textContent = '已取得學生身分，可以準備繳交作業。';
-        return;
-      }
-
-      // 尚未登入，建立匿名身分
-      const { data, error } =
-        await supabase.auth.signInAnonymously();
+      const {
+        data: { session },
+        error
+      } = await supabase.auth.getSession();
 
       if (error) {
         throw error;
       }
 
+      if (session) {
+        console.log('學生已登入：', session.user.id);
+        statusElement.textContent =
+          '已取得學生身分，可以準備繳交作業。';
+        return;
+      }
+
+      const { data, error: signInError } =
+        await supabase.auth.signInAnonymously();
+
+      if (signInError) {
+        throw signInError;
+      }
+
       console.log('匿名登入成功：', data.user.id);
-      statusElement.textContent = '學生身分建立成功，可以準備繳交作業。';
+
+      statusElement.textContent =
+        '學生身分建立成功，可以準備繳交作業。';
 
     } catch (error) {
       console.error('匿名登入失敗：', error);
+
       statusElement.textContent =
-        '身分建立失敗，請稍後重新整理頁面。';
+        '身分建立失敗，請重新整理頁面。';
     }
   }
 
-  // 執行初始化
+  // ===== 提交作業 =====
+  formElement.addEventListener('submit', async function (event) {
+    event.preventDefault();
+
+    try {
+      // 1. 取得表單資料
+      const studentName = nameElement.value.trim();
+      const studentNumber = numberElement.value.trim();
+      const file = fileElement.files[0];
+
+      if (!studentName || !studentNumber || !file) {
+        statusElement.textContent =
+          '請填寫姓名、學號並選擇作業檔案。';
+        return;
+      }
+
+      // 2. 檢查檔案大小
+      if (file.size > MAX_FILE_SIZE) {
+        statusElement.textContent =
+          '檔案超過 50 MB，請選擇較小的檔案。';
+        return;
+      }
+
+      // 3. 取得目前登入身分
+      const {
+        data: { session },
+        error: sessionError
+      } = await supabase.auth.getSession();
+
+      if (sessionError) {
+        throw sessionError;
+      }
+
+      if (!session) {
+        statusElement.textContent =
+          '尚未取得學生身分，請重新整理頁面。';
+        return;
+      }
+
+      const user = session.user;
+
+      // 4. 建立固定的 Storage 檔案路徑
+      const filePath =
+        `${user.id}/week${WEEK_NUMBER}/submission`;
+
+      // 5. 開始上傳檔案
+      submitButton.disabled = true;
+
+      statusElement.textContent = '作業上傳中，請稍候...';
+
+      const { error: uploadError } = await supabase.storage
+        .from(BUCKET_NAME)
+        .upload(filePath, file, {
+          upsert: true,
+          contentType: file.type || 'application/octet-stream'
+        });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      console.log('檔案上傳成功：', filePath);
+
+      // 6. 寫入或更新資料庫紀錄
+      const { error: databaseError } = await supabase
+        .from('student_submissions')
+        .upsert(
+          {
+            user_id: user.id,
+            student_name: studentName,
+            student_number: studentNumber,
+            week_number: WEEK_NUMBER,
+            file_name: file.name,
+            file_path: filePath,
+            submitted_at: new Date().toISOString()
+          },
+          {
+            onConflict: 'user_id,week_number'
+          }
+        );
+
+      if (databaseError) {
+        throw databaseError;
+      }
+
+      // 7. 顯示成功訊息
+      console.log('資料庫更新成功');
+
+      statusElement.textContent =
+        '作業上傳成功！若先前已繳交，本次將以最新版本為準。';
+
+      // 清空檔案選擇欄位
+      fileElement.value = '';
+
+    } catch (error) {
+      console.error('作業上傳失敗：', error);
+
+      statusElement.textContent =
+        `作業上傳失敗：${error.message}`;
+    } finally {
+      submitButton.disabled = false;
+    }
+  });
+
+  // ===== 執行初始化 =====
   initializeStudent();
 </script>
+
 
 <body>
 

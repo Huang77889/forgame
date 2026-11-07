@@ -1,0 +1,121 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>教師作業管理</title>
+</head>
+<body>
+
+  <h1>教師作業管理系統</h1>
+
+    <section id="login-section">
+        <h2>教師登入</h2>
+
+        <form id="login-form">
+        <div>
+            <label for="email">電子郵件</label>
+            <input type="email" id="email" required>
+        </div>
+
+        <div>
+            <label for="password">密碼</label>
+            <input type="password" id="password" required>
+        </div>
+
+        <button type="submit" id="login-btn">登入</button>
+        </form>
+    </section>
+
+    <p id="login-status"></p>
+
+    <section id="teacher-section" hidden>
+        <h2>歡迎使用教師管理系統</h2>
+        <p id="teacher-email"></p>
+        <button id="logout-btn">登出</button>
+    </section>
+
+  <script type="module">
+    import { supabase } from './js/supabase.js';
+
+    const loginForm = document.getElementById('login-form');
+    const loginSection = document.getElementById('login-section');
+    const teacherSection = document.getElementById('teacher-section');
+    const loginStatus = document.getElementById('login-status');
+    const teacherEmail = document.getElementById('teacher-email');
+
+    // 檢查目前登入者是否為教師
+    async function checkTeacher() {
+      const { data: { session }, error } =
+        await supabase.auth.getSession();
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      if (!session) return;
+
+      const user = session.user;
+
+      if (user.app_metadata?.role === 'teacher') {
+        showTeacher(user);
+      } else {
+        loginStatus.textContent = '此帳號沒有教師權限。';
+      }
+    }
+
+    // 顯示教師頁面
+    function showTeacher(user) {
+      loginSection.hidden = true;
+      teacherSection.hidden = false;
+      teacherEmail.textContent = `登入帳號：${user.email}`;
+      loginStatus.textContent = '教師登入成功！';
+    }
+
+    // 教師登入
+    loginForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      loginStatus.textContent = '登入中...';
+
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      const { data, error } =
+        await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+
+      if (error) {
+        console.error('登入失敗：', error);
+        loginStatus.textContent = '登入失敗，請確認帳號與密碼。';
+        return;
+      }
+
+      if (data.user.app_metadata?.role !== 'teacher') {
+        await supabase.auth.signOut();
+        loginStatus.textContent = '此帳號沒有教師權限。';
+        return;
+      }
+
+      showTeacher(data.user);
+    });
+
+    // 登出
+    document.getElementById('logout-btn')
+      .addEventListener('click', async () => {
+        await supabase.auth.signOut();
+
+        teacherSection.hidden = true;
+        loginSection.hidden = false;
+        loginStatus.textContent = '已登出。';
+      });
+
+    checkTeacher();
+  </script>
+
+</body>
+</html>
