@@ -40,7 +40,9 @@
         <hr>
 
         <h3>學生作業列表</h3>
-
+        <button id="download-all-btn">
+            下載全部作業（ZIP）
+        </button>
         <p id="submission-status">正在載入作業資料...</p>
 
         <table border="1" cellpadding="8">
@@ -51,6 +53,7 @@
                 <th>週次</th>
                 <th>檔案名稱</th>
                 <th>繳交時間</th>
+                <th>下載作業</th>
             </tr>
             </thead>
 
@@ -60,6 +63,7 @@
 
   <script type="module">
     import { supabase } from './js/supabase.js';
+    import JSZip from 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm';
 
     const loginForm = document.getElementById('login-form');
     const loginSection = document.getElementById('login-section');
@@ -98,51 +102,74 @@
     }
     // 讀取學生作業資料
     async function loadSubmissions() {
-    const status = document.getElementById('submission-status');
-    const list = document.getElementById('submission-list');
+        const status = document.getElementById('submission-status');
+        const list = document.getElementById('submission-list');
 
-    status.textContent = '正在載入作業資料...';
-    list.replaceChildren();
+        status.textContent = '正在載入作業資料...';
+        list.replaceChildren();
 
-    const { data, error } = await supabase
-        .from('student_submissions')
-        .select('*')
-        .order('submitted_at', { ascending: false });
+        const { data, error } = await supabase
+            .from('student_submissions')
+            .select('*')
+            .order('submitted_at', { ascending: false });
 
-    if (error) {
-        console.error('讀取作業失敗：', error);
-        status.textContent = '讀取失敗，請檢查資料庫權限。';
-        return;
-    }
+        if (error) {
+            console.error('讀取作業失敗：', error);
+            status.textContent = '讀取失敗，請檢查資料庫權限。';
+            return;
+        }
 
-    if (!data || data.length === 0) {
-        status.textContent = '目前沒有學生繳交作業。';
-        return;
-    }
+        if (!data || data.length === 0) {
+            status.textContent = '目前沒有學生繳交作業。';
+            return;
+        }
 
-    data.forEach((submission) => {
-        const row = document.createElement('tr');
+        data.forEach((submission) => {
+            const row = document.createElement('tr');
 
-        const values = [
-        submission.student_name,
-        submission.student_number,
-        `第 ${submission.week_number} 週`,
-        submission.file_name,
-        new Date(submission.submitted_at).toLocaleString('zh-TW')
-        ];
+            const values = [
+                submission.student_name,
+                submission.student_number,
+                `第 ${submission.week_number} 週`,
+                submission.file_name,
+                new Date(submission.submitted_at).toLocaleString('zh-TW')
+            ];
 
-        values.forEach((value) => {
-        const cell = document.createElement('td');
-        cell.textContent = value ?? '';
-        row.appendChild(cell);
+            values.forEach((value) => {
+                const cell = document.createElement('td');
+                cell.textContent = value ?? '';
+                row.appendChild(cell);
+            });
+
+            // 建立下載按鈕
+            const downloadCell = document.createElement('td');
+            const downloadButton = document.createElement('button');
+
+            downloadButton.textContent = '下載作業';
+
+            downloadButton.addEventListener('click', async () => {
+                const { data, error } = await supabase.storage
+                    .from('assignment-files')
+                    .createSignedUrl(submission.file_path, 120);
+
+                if (error) {
+                    console.error('下載連結建立失敗：', error);
+                    alert('無法取得下載連結。');
+                    return;
+                }
+
+                window.open(data.signedUrl, '_blank');
+            });
+
+            downloadCell.appendChild(downloadButton);
+            row.appendChild(downloadCell);
+
+            list.appendChild(row);
         });
 
-        list.appendChild(row);
-    });
+        status.textContent = `目前共有 ${data.length} 筆作業紀錄。`;
 
-    status.textContent = `目前共有 ${data.length} 筆作業紀錄。`;
-
-    console.log('作業資料讀取成功：', data);
+        console.log('作業資料讀取成功：', data);
     }
 
     // 教師登入
