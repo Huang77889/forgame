@@ -31,9 +31,31 @@
     <p id="login-status"></p>
 
     <section id="teacher-section" hidden>
-        <h2>歡迎使用教師管理系統</h2>
+        <h2>教師作業管理</h2>
+
         <p id="teacher-email"></p>
+
         <button id="logout-btn">登出</button>
+
+        <hr>
+
+        <h3>學生作業列表</h3>
+
+        <p id="submission-status">正在載入作業資料...</p>
+
+        <table border="1" cellpadding="8">
+            <thead>
+            <tr>
+                <th>學生姓名</th>
+                <th>學號</th>
+                <th>週次</th>
+                <th>檔案名稱</th>
+                <th>繳交時間</th>
+            </tr>
+            </thead>
+
+            <tbody id="submission-list"></tbody>
+        </table>
     </section>
 
   <script type="module">
@@ -67,11 +89,60 @@
     }
 
     // 顯示教師頁面
-    function showTeacher(user) {
+    async function showTeacher(user) {
       loginSection.hidden = true;
       teacherSection.hidden = false;
       teacherEmail.textContent = `登入帳號：${user.email}`;
       loginStatus.textContent = '教師登入成功！';
+      await loadSubmissions();
+    }
+    // 讀取學生作業資料
+    async function loadSubmissions() {
+    const status = document.getElementById('submission-status');
+    const list = document.getElementById('submission-list');
+
+    status.textContent = '正在載入作業資料...';
+    list.replaceChildren();
+
+    const { data, error } = await supabase
+        .from('student_submissions')
+        .select('*')
+        .order('submitted_at', { ascending: false });
+
+    if (error) {
+        console.error('讀取作業失敗：', error);
+        status.textContent = '讀取失敗，請檢查資料庫權限。';
+        return;
+    }
+
+    if (!data || data.length === 0) {
+        status.textContent = '目前沒有學生繳交作業。';
+        return;
+    }
+
+    data.forEach((submission) => {
+        const row = document.createElement('tr');
+
+        const values = [
+        submission.student_name,
+        submission.student_number,
+        `第 ${submission.week_number} 週`,
+        submission.file_name,
+        new Date(submission.submitted_at).toLocaleString('zh-TW')
+        ];
+
+        values.forEach((value) => {
+        const cell = document.createElement('td');
+        cell.textContent = value ?? '';
+        row.appendChild(cell);
+        });
+
+        list.appendChild(row);
+    });
+
+    status.textContent = `目前共有 ${data.length} 筆作業紀錄。`;
+
+    console.log('作業資料讀取成功：', data);
     }
 
     // 教師登入
