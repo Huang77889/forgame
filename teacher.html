@@ -66,6 +66,11 @@
     import JSZip from 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm';
 
     const loginForm = document.getElementById('login-form');
+    
+    document
+        .getElementById('download-all-btn')
+        .addEventListener('click', downloadAllSubmissions);
+        
     const loginSection = document.getElementById('login-section');
     const teacherSection = document.getElementById('teacher-section');
     const loginStatus = document.getElementById('login-status');
@@ -100,6 +105,7 @@
       loginStatus.textContent = '教師登入成功！';
       await loadSubmissions();
     }
+
     // 讀取學生作業資料
     async function loadSubmissions() {
         const status = document.getElementById('submission-status');
@@ -170,6 +176,84 @@
         status.textContent = `目前共有 ${data.length} 筆作業紀錄。`;
 
         console.log('作業資料讀取成功：', data);
+    }
+
+    async function downloadAllSubmissions() {
+        const button = document.getElementById('download-all-btn');
+        const status = document.getElementById('submission-status');
+
+        try {
+            button.disabled = true;
+            button.textContent = '正在打包作業...';
+            status.textContent = '正在下載學生作業，請稍候...';
+
+            // 取得所有學生的作業紀錄
+            const { data: submissions, error } = await supabase
+            .from('student_submissions')
+            .select('*')
+            .order('student_number', { ascending: true });
+
+            if (error) throw error;
+
+            if (!submissions || submissions.length === 0) {
+                status.textContent = '目前沒有學生繳交作業。';
+                return;
+            }
+
+            // 建立 ZIP
+            const zip = new JSZip();
+
+            // 逐一下載學生作業
+            for (const submission of submissions) {
+                const { data, error } = await supabase.storage
+                    .from('assignment-files')
+                    .download(submission.file_path);
+
+                if (error) {
+                    console.error(
+                    '檔案下載失敗：',
+                    submission.student_name,
+                    error
+                    );
+                    continue;
+                }
+
+                const fileName =
+                    `${submission.student_name}_${submission.student_number}_` +
+                    submission.file_name;
+
+                zip.file(fileName, data);
+            }
+
+            // 產生 ZIP 檔案
+            const zipBlob = await zip.generateAsync({
+                type: 'blob'
+            });
+
+            // 建立下載連結
+            const downloadUrl = URL.createObjectURL(zipBlob);
+            const link = document.createElement('a');
+
+            link.href = downloadUrl;
+            link.download = '學生作業總整理.zip';
+
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+
+            URL.revokeObjectURL(downloadUrl);
+
+            status.textContent =
+            `已完成 ${submissions.length} 筆作業的打包程序。`;
+
+        } catch (error) {
+            console.error('ZIP 打包失敗：', error);
+            status.textContent = '打包失敗，請查看 Console。';
+
+        } finally {
+            button.disabled = false;
+            button.textContent = '下載全部作業（ZIP）';
+        }
     }
 
     // 教師登入
