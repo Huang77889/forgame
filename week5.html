@@ -12,153 +12,151 @@
 </head>
 
 
+
 <script type="module">
   import { supabase } from './js/supabase.js';
 
   // ===== 基本設定 =====
   const WEEK_NUMBER = 5;
-  const BUCKET_NAME = 'assignment-files';
-  const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
+  const MAX_FILE_SIZE = 50 * 1024 * 1024;
 
   // ===== HTML 元素 =====
   const statusElement = document.getElementById('upload-status');
   const formElement = document.getElementById('assignment-form');
+  const schoolElement = document.getElementById('school-id');
   const nameElement = document.getElementById('student-name');
   const numberElement = document.getElementById('student-number');
   const fileElement = document.getElementById('assignment-file');
   const submitButton = document.getElementById('submit-btn');
 
-  // ===== 取得學生登入身分 =====
-  async function initializeStudent() {
+
+  // ===== 載入學校清單 =====
+  async function loadSchools() {
     try {
-      const {
-        data: { session },
-        error
-      } = await supabase.auth.getSession();
+      statusElement.textContent = '正在載入學校清單...';
+
+      const { data, error } = await supabase
+        .from('schools')
+        .select('school_id, school_name')
+        .eq('is_active', true)
+        .order('school_name');
 
       if (error) {
         throw error;
       }
 
-      if (session) {
-        console.log('學生已登入：', session.user.id);
-        statusElement.textContent =
-          '已取得學生身分，可以準備繳交作業。';
-        return;
+      if (!data || data.length === 0) {
+        throw new Error('目前沒有可選擇的學校');
       }
 
-      const { data, error: signInError } =
-        await supabase.auth.signInAnonymously();
+      // 清空原本選項
+      schoolElement.innerHTML = '';
 
-      if (signInError) {
-        throw signInError;
-      }
+      // 建立預設選項
+      const defaultOption = document.createElement('option');
+      defaultOption.value = '';
+      defaultOption.textContent = '請選擇學校';
+      schoolElement.appendChild(defaultOption);
 
-      console.log('匿名登入成功：', data.user.id);
+      // 加入學校資料
+      data.forEach(school => {
+        const option = document.createElement('option');
 
-      statusElement.textContent =
-        '學生身分建立成功，可以準備繳交作業。';
+        option.value = school.school_id;
+        option.textContent = school.school_name;
+
+        schoolElement.appendChild(option);
+      });
+
+      statusElement.textContent = '請填寫資料並選擇作業檔案。';
+
+      console.log('學校清單載入成功：', data);
 
     } catch (error) {
-      console.error('匿名登入失敗：', error);
+      console.error('學校清單載入失敗：', error);
 
       statusElement.textContent =
-        '身分建立失敗，請重新整理頁面。';
+        '學校清單載入失敗，請重新整理頁面。';
     }
   }
+
 
   // ===== 提交作業 =====
   formElement.addEventListener('submit', async function (event) {
     event.preventDefault();
 
+    submitButton.disabled = true;
+
     try {
       // 1. 取得表單資料
+      const schoolId = schoolElement.value;
       const studentName = nameElement.value.trim();
       const studentNumber = numberElement.value.trim();
       const file = fileElement.files[0];
 
-      if (!studentName || !studentNumber || !file) {
-        statusElement.textContent =
-          '請填寫姓名、學號並選擇作業檔案。';
-        return;
+      // 2. 檢查資料是否完整
+      if (!schoolId || !studentName || !studentNumber || !file) {
+        throw new Error('請填寫學校、姓名、學號並選擇作業檔案。');
       }
 
-      // 2. 檢查檔案大小
+      // 3. 檢查檔案大小
+      if (file.size === 0) {
+        throw new Error('不可上傳空白檔案。');
+      }
+
       if (file.size > MAX_FILE_SIZE) {
-        statusElement.textContent =
-          '檔案超過 50 MB，請選擇較小的檔案。';
-        return;
+        throw new Error('檔案超過 50 MB，請選擇較小的檔案。');
       }
 
-      // 3. 取得目前登入身分
-      const {
-        data: { session },
-        error: sessionError
-      } = await supabase.auth.getSession();
+      // 4. 建立表單資料，準備傳送給 Edge Function
+      const formData = new FormData();
 
-      if (sessionError) {
-        throw sessionError;
-      }
+      formData.append('school_id', schoolId);
+      formData.append('student_name', studentName);
+      formData.append('student_number', studentNumber);
+      formData.append('week_number', String(WEEK_NUMBER));
+      formData.append('file', file);
 
-      if (!session) {
-        statusElement.textContent =
-          '尚未取得學生身分，請重新整理頁面。';
-        return;
-      }
+      // 5. 呼叫 Supabase Edge Function
+      statusElement.textContent = '正在驗證學生資料並上傳作業，請稍候...';
 
-      const user = session.user;
+      const { data, error } = await supabase.functions.invoke(
+        'submit-assignment',
+        {
+          body: formData
+        }
+      );
 
-      // 4. 建立固定的 Storage 檔案路徑
-      const filePath =
-        `${user.id}/week${WEEK_NUMBER}/submission`;
+      // 6. 處理伺服器錯誤
+      if (error) {
+        let errorMessage = error.message;
 
-      // 5. 開始上傳檔案
-      submitButton.disabled = true;
+        if (error.context instanceof Response) {
+          try {
+            const result = await error.context.json();
 
-      statusElement.textContent = '作業上傳中，請稍候...';
-
-      const { error: uploadError } = await supabase.storage
-        .from(BUCKET_NAME)
-        .upload(filePath, file, {
-          upsert: true,
-          contentType: file.type || 'application/octet-stream'
-        });
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      console.log('檔案上傳成功：', filePath);
-
-      // 6. 寫入或更新資料庫紀錄
-      const { error: databaseError } = await supabase
-        .from('student_submissions')
-        .upsert(
-          {
-            user_id: user.id,
-            student_name: studentName,
-            student_number: studentNumber,
-            week_number: WEEK_NUMBER,
-            file_name: file.name,
-            file_path: filePath,
-            submitted_at: new Date().toISOString()
-          },
-          {
-            onConflict: 'user_id,week_number'
+            if (result.message) {
+              errorMessage = result.message;
+            }
+          } catch (parseError) {
+            console.log('無法讀取錯誤詳細資料');
           }
-        );
+        }
 
-      if (databaseError) {
-        throw databaseError;
+        throw new Error(errorMessage);
       }
 
-      // 7. 顯示成功訊息
-      console.log('資料庫更新成功');
+      // 7. 確認上傳結果
+      if (!data || !data.success) {
+        throw new Error(data?.message || '作業上傳失敗，請稍後再試。');
+      }
+
+      console.log('作業上傳成功：', data);
 
       statusElement.textContent =
-        '作業上傳成功！若先前已繳交，本次將以最新版本為準。';
+        data.message || '作業上傳成功！';
 
-      // 清空檔案選擇欄位
+      // 清空檔案欄位
       fileElement.value = '';
 
     } catch (error) {
@@ -166,14 +164,18 @@
 
       statusElement.textContent =
         `作業上傳失敗：${error.message}`;
+
     } finally {
       submitButton.disabled = false;
     }
   });
 
-  // ===== 執行初始化 =====
-  initializeStudent();
+
+  // ===== 初始化 =====
+  loadSchools();
+
 </script>
+
 
 
 <body>
@@ -211,44 +213,50 @@
         <p>請填寫基本資料並上傳本週作業。</p>
 
         <form id="assignment-form">
+          <div class="form-group">
+            <label for="school-id">就讀學校</label>
+            <select id="school-id" name="school-id" required>
+                <option value="">請選擇學校</option>
+            </select>
+          </div>
 
-            <div class="form-group">
-                <label for="student-name">學生姓名</label>
-                <input
-                    type="text"
-                    id="student-name"
-                    name="student-name"
-                    placeholder="請輸入姓名"
-                    required
-                >
-            </div>
+          <div class="form-group">
+              <label for="student-name">學生姓名</label>
+              <input
+                  type="text"
+                  id="student-name"
+                  name="student-name"
+                  placeholder="請輸入姓名"
+                  required
+              >
+          </div>
 
-            <div class="form-group">
-                <label for="student-number">學號</label>
-                <input
-                    type="text"
-                    id="student-number"
-                    name="student-number"
-                    placeholder="請輸入學號"
-                    required
-                >
-            </div>
+          <div class="form-group">
+              <label for="student-number">學號</label>
+              <input
+                  type="text"
+                  id="student-number"
+                  name="student-number"
+                  placeholder="請輸入學號"
+                  required
+              >
+          </div>
 
-            <div class="form-group">
-                <label for="assignment-file">作業檔案</label>
-                <input
-                    type="file"
-                    id="assignment-file"
-                    name="assignment-file"
-                    required
-                >
-            </div>
+          <div class="form-group">
+              <label for="assignment-file">作業檔案</label>
+              <input
+                  type="file"
+                  id="assignment-file"
+                  name="assignment-file"
+                  required
+              >
+          </div>
 
-            <button type="submit" id="submit-btn">
-            提交作業
-            </button>
+          <button type="submit" id="submit-btn">
+          提交作業
+          </button>
 
-            <p id="upload-status"></p>
+          <p id="upload-status"></p>
 
         </form>
     </section>
